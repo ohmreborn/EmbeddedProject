@@ -19,7 +19,6 @@ typedef struct {
     uint8_t size_queue;
 } AllObstacle;
 
-extern float vx;
 
 extern AllObstacle UnFlappyObstacle;
 

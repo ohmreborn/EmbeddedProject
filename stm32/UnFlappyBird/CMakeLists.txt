@@ -47,17 +47,16 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ${CMAKE_CURRENT_SOURCE_DIR}/ssd1306/ssd1306.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ssd1306/ssd1306_fonts.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/bird/bird.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/bird/gravity.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/obstacle/obstacle.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/bird.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/gravity.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/obstacle.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     ${CMAKE_CURRENT_SOURCE_DIR}/ssd1306
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/bird
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/obstacle
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird
 )
 
 # Add project symbols (macros)

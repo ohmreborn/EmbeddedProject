@@ -3,14 +3,15 @@
 #include <obstacle.h>
 #include <stdint.h>
 
-float g = 2500;
+float g = 500;
 float x = 50;
 float y = 20;
 uint8_t w = 22;
 uint8_t h = 17;
 
 float vy = 100;
-float fly_vy = -200;
+float vx = -100;
+float fly_vy = -100;
 float dt = 1e-2;
 
 void reset_game(TIM_HandleTypeDef *htim){

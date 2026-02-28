@@ -6,6 +6,7 @@ extern float x;
 extern float y;
 extern uint8_t w;
 extern uint8_t h;
+extern float vx;
 extern float vy;
 extern float fly_vy;
 extern float dt;

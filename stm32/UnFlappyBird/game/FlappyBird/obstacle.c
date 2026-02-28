@@ -3,8 +3,6 @@
 #include <gravity.h>
 #include <stdint.h>
 
-float vx = -200;
-
 AllObstacle UnFlappyObstacle;
 void ssd1306_DrawObstacle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2){
     ssd1306_FillRectangle(x1, 0, x2, y1, White);
@@ -54,7 +52,7 @@ void update_obstacle(TIM_HandleTypeDef *htim){
     }
 
     Obstacle *last_obstacle = UnFlappyObstacle.all_obstacle + (UnFlappyObstacle.size_queue - 1);
-    if (last_obstacle->x2 < 128 - DISTANCE_OBSTACLE && UnFlappyObstacle.size_queue < NUM_OBSTACLE){
+    if (last_obstacle->x2 < 127 - DISTANCE_OBSTACLE && UnFlappyObstacle.size_queue < NUM_OBSTACLE){
       UnFlappyObstacle.size_queue += 1;
     }
 }
