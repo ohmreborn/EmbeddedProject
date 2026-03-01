@@ -50,6 +50,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/bird.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/gravity.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/obstacle.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/home.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameover.c
 )
 
 # Add include paths
@@ -57,6 +59,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     ${CMAKE_CURRENT_SOURCE_DIR}/ssd1306
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu  # home
 )
 
 # Add project symbols (macros)

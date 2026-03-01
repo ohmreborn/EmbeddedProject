@@ -25,6 +25,8 @@
 #include <obstacle.h>
 #include <gravity.h>
 #include <stdint.h>
+#include "home.h"
+#include "gameover.h"
 
 /* USER CODE END Includes */
 
@@ -51,6 +53,8 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+typedef enum { APP_MENU = 0, APP_PLAY, APP_GAME_OVER } AppState_t;
+static AppState_t app_state = APP_MENU;
 
 /* USER CODE END PV */
 
@@ -111,17 +115,39 @@ int main(void)
   HAL_TIM_Base_Start(&htim1);
   ssd1306_Init();
   init_obstacle(&htim1);
+  Home_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    for (uint8_t i = 0;i<FRAME_COUNT;i++){
-      ssd1306_Fill(Black);
-      update_obstacle(&htim1);
-      update_bird(i, &htim1);
-      ssd1306_UpdateScreen();
+    if (app_state == APP_MENU){
+      Home_Update();
+      Home_Render();
+      if (Home_IsStartPressed()){
+        app_state = APP_PLAY;
+        reset_game(&htim1);
+      }
+    } else if (app_state == APP_PLAY) {
+      for (uint8_t i = 0;i<FRAME_COUNT;i++){
+        ssd1306_Fill(Black);
+        update_obstacle(&htim1);
+        if (update_bird(i, &htim1)){
+          // Bird died, transition to game over
+          app_state = APP_GAME_OVER;
+          GameOver_Init(get_score());
+          break;
+        }
+        ssd1306_UpdateScreen();
+      }
+    } else if (app_state == APP_GAME_OVER) {
+      GameOver_Update();
+      GameOver_Render();
+      if (GameOver_IsRestartPressed()){
+        app_state = APP_PLAY;
+        reset_game(&htim1);
+      }
     }
   }
     /* USER CODE END WHILE */
