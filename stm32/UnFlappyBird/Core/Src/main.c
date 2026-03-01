@@ -155,24 +155,25 @@ int main(void)
     } else if (app_state == APP_GAME_OVER) {
       GameOver_Update();
       GameOver_Render();
-      if (GameOver_IsRestartPressed()){
+      if (GameOver_IsRestartPressed()) {
         app_state = APP_PLAY;
         reset_game(&htim1);
       }
-    for (uint8_t i = 0; i < FRAME_COUNT; i++) {
-      HAL_ADC_Start(&hadc1);
-      HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-      uint32_t raw = HAL_ADC_GetValue(&hadc1);
-      float ratio = ((float)raw + 1)/ 4096;
-      vx = base_vx * ratio;
-      vy *= ratio;
-      g = base_g * ratio;
-      fly_vy = base_fly_vy * ratio;
-      ssd1306_Fill(Black);
-      update_obstacle(&htim1);
-      update_bird(i, &htim1);
-      ssd1306_UpdateScreen();
     }
+  //   for (uint8_t i = 0; i < FRAME_COUNT; i++) {
+  //     HAL_ADC_Start(&hadc1);
+  //     HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+  //     uint32_t raw = HAL_ADC_GetValue(&hadc1);
+  //     float ratio = ((float)raw + 1)/ 4096;
+  //     vx = base_vx * ratio;
+  //     vy *= ratio;
+  //     g = base_g * ratio;
+  //     fly_vy = base_fly_vy * ratio;
+  //     ssd1306_Fill(Black);
+  //     update_obstacle(&htim1);
+  //     update_bird(i, &htim1);
+  //     ssd1306_UpdateScreen();
+  //   }
   }
     /* USER CODE END WHILE */
 
@@ -450,11 +451,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  /*Configure GPIO pin : START_BTN_Pin */
+  GPIO_InitStruct.Pin = START_BTN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(START_BTN_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);

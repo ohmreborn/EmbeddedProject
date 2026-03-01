@@ -3,6 +3,7 @@
 #include "ssd1306.h"
 #include "ssd1306_fonts.h"
 #include "main.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -51,8 +52,8 @@ void GameOver_Render(void){
   // Format and display score on one centered line
   sprintf(score_str, "Score: %u", score);
   size_t slen = strlen(score_str);
-  int16_t s_width = (int16_t)slen * 11; // Font_11x18 width per char
-  int16_t s_x = (128 - s_width) / 2;
+  uint8_t s_width = (uint8_t)slen * 11; // Font_11x18 width per char
+  uint8_t s_x = (128 - s_width) / 2;
   if (s_x < 0) s_x = 0;
   ssd1306_SetCursor((uint8_t)s_x, 22);
   ssd1306_WriteString(score_str, Font_11x18, White);
