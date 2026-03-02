@@ -77,7 +77,13 @@ static void MX_ADC1_Init(void);
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   if (GPIO_Pin == GPIO_PIN_1){
-    vy = fly_vy;
+    if (app_state == APP_MENU){
+      // app_state = APP_PLAY;
+      app_state = APP_GAME_OVER;
+      ssd1306_InvertRectangle(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+    }else if (app_state == APP_PLAY){
+      vy = fly_vy;
+    }
   }
 }
 
@@ -134,22 +140,18 @@ int main(void)
   while (1)
   {
     if (app_state == APP_MENU){
-      Home_Update();
       Home_Render();
-      if (Home_IsStartPressed()){
-        app_state = APP_PLAY;
-        reset_game(&htim1);
-      }
     } else if (app_state == APP_PLAY) {
       for (uint8_t i = 0;i<FRAME_COUNT;i++){
         ssd1306_Fill(Black);
         update_obstacle(&htim1);
-        if (update_bird(i, &htim1)){
-          // Bird died, transition to game over
-          app_state = APP_GAME_OVER;
-          GameOver_Init(get_score());
-          break;
-        }
+        update_bird(i, &htim1);
+            // if (update_bird(i, &htim1)){
+            //   // Bird died, transition to game over
+            //   app_state = APP_GAME_OVER;
+            //   GameOver_Init(get_score());
+            //   break;
+            // }
         ssd1306_UpdateScreen();
       }
     } else if (app_state == APP_GAME_OVER) {
@@ -447,7 +449,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PA1 */
   GPIO_InitStruct.Pin = GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
