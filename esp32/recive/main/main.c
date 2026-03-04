@@ -7,11 +7,11 @@
 #include "esp_mac.h"
 #include <driver/gpio.h>
 
-#define LED_GPIO 23
+#define LED_GPIO 2
 
 static void on_data_recv(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len)
 {
-    // uint8_t *mac = recv_info->src_addr;
+    uint8_t *mac = recv_info->src_addr;
     int16_t accelX = (data[0] << 8) | data[1];
     int16_t accelY = (data[2] << 8) | data[3];
     int16_t accelZ = (data[4] << 8) | data[5];
@@ -32,12 +32,19 @@ static void on_data_recv(const esp_now_recv_info_t *recv_info, const uint8_t *da
     if (gx < 0){
         gx = -gx;
     }
-    if (gx > 50){
+    if (gy < 0){
+        gy = -gy;
+    }
+    if (gz < 0){
+        gz = -gz;
+    }
+    if (gx > 150 || gy > 150 || gz > 150){
         gpio_set_level(LED_GPIO, 1);
     }else{
         gpio_set_level(LED_GPIO, 0);
     }
-    printf(">AX:%.2f,AY:%.2f,AZ:%.2f,GX:%.2f,GY:%.2f,GZ:%.2f\n", ax, ay,az, gx, gy, gz);
+    // 24:0A:C4:9A:FC:98 left
+    printf(">Received from MAC %02X:%02X:%02X:%02X:%02X:%02X AX:%.2f,AY:%.2f,AZ:%.2f,GX:%.2f,GY:%.2f,GZ:%.2f\n",mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ax, ay,az, gx, gy, gz);
     // printf("Received from MAC %02X:%02X:%02X:%02X:%02X:%02X: %.*s\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], len, (char *)data);
 }
 

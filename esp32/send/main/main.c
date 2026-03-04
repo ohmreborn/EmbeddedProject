@@ -22,7 +22,8 @@
 #define MPU_ADDR 0x68
 
 // Receiver MAC Address
-uint8_t mac_destination[6] = {0xe8, 0x68, 0xe7, 0x23, 0x82, 0x1c};
+// uint8_t mac_destination[6] = {0xe8, 0x68, 0xe7, 0x23, 0x82, 0x1c};
+uint8_t mac_destination[6] = {0x30, 0xae, 0xa4, 0x1a, 0x28, 0x20};
 
 static esp_err_t i2c_master_init(void) {
   int i2c_master_port = I2C_NUM;
@@ -60,13 +61,6 @@ void mpu_6050_init(){
   mpuWriteReg(0x6B, 0);
   mpuWriteReg(0x19, 7); // sample rate 1KHz
 }
-// Callback function
-void on_data_sent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
-{
-  uint8_t *mac = tx_info->src_addr;
-  printf("send to MAC %02X:%02X:%02X:%02X:%02X:%02X \n", mac[0],
-         mac[1], mac[2], mac[3], mac[4], mac[5]);
-}
 
 void wifi_init()
 {
@@ -95,7 +89,7 @@ void app_main(void)
 
     // ESP-NOW initiation and register a callback function that will be called
     esp_now_init();
-    esp_now_register_send_cb(on_data_sent);
+    // esp_now_register_send_cb(on_data_sent);
 
     // Add a peer device with which ESP32 can communicate
     esp_now_peer_info_t peer = {0};
@@ -108,11 +102,7 @@ void app_main(void)
     {
       uint8_t data[14];
       mpuReadfromReg(0x3B, data, 14);
-
-      // ESP_LOGI("MPU", "AX=%.2f AY=%.2f AZ=%.2f | GX=%.2f GY=%.2f GZ=%.2f",
-      // ax, ay,az, gx, gy, gz);
-
       esp_now_send(mac_destination, (uint8_t *)data, 14);
-      // vTaskDelay(pdMS_TO_TICKS(100));
+      // vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
