@@ -143,8 +143,19 @@ int main(void)
       Home_Render();
     } else if (app_state == APP_PLAY) {
       for (uint8_t i = 0;i<FRAME_COUNT;i++){
+        /* sample ADC and scale game parameters */
+        HAL_ADC_Start(&hadc1);
+        HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+        uint32_t raw = HAL_ADC_GetValue(&hadc1);
+        float ratio = ((float)raw + 1) / 4096.0f;
+        vx = base_vx * ratio;
+        vy *= ratio;
+        g = base_g * ratio;
+        fly_vy = base_fly_vy * ratio;
+
         ssd1306_Fill(Black);
         update_obstacle(&htim1);
+<<<<<<< Updated upstream
         update_bird(i, &htim1);
             // if (update_bird(i, &htim1)){
             //   // Bird died, transition to game over
@@ -152,6 +163,14 @@ int main(void)
             //   GameOver_Init(get_score());
             //   break;
             // }
+=======
+        if (update_bird(i, &htim1)){
+          /* Bird died, transition to game over */
+          app_state = APP_GAME_OVER;
+          GameOver_Init(get_score());
+          break;
+        }
+>>>>>>> Stashed changes
         ssd1306_UpdateScreen();
       }
     } else if (app_state == APP_GAME_OVER) {
@@ -162,6 +181,7 @@ int main(void)
         reset_game(&htim1);
       }
     }
+<<<<<<< Updated upstream
   //   for (uint8_t i = 0; i < FRAME_COUNT; i++) {
   //     HAL_ADC_Start(&hadc1);
   //     HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
@@ -177,10 +197,13 @@ int main(void)
   //     ssd1306_UpdateScreen();
   //   }
   }
+=======
+>>>>>>> Stashed changes
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
+  }
 }
 
 /**

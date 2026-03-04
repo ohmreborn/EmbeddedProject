@@ -1,6 +1,17 @@
 
 #include "ssd1306_fonts.h"
 
+/* ensure fonts are included by default */
+#ifndef SSD1306_INCLUDE_FONT_6x8
+#define SSD1306_INCLUDE_FONT_6x8
+#endif
+#ifndef SSD1306_INCLUDE_FONT_7x10
+#define SSD1306_INCLUDE_FONT_7x10
+#endif
+#ifndef SSD1306_INCLUDE_FONT_11x18
+#define SSD1306_INCLUDE_FONT_11x18
+#endif
+
 #ifdef SSD1306_INCLUDE_FONT_7x10
 static const uint16_t Font7x10 [] = {
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,  // sp
