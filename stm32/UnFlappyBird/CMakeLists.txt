@@ -52,6 +52,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/obstacle.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/home.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameover.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/mainmenu.c
 )
 
 # Add include paths

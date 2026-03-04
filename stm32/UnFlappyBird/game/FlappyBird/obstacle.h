@@ -27,3 +27,5 @@ void ssd1306_DrawObstacle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
 void init_obstacle(TIM_HandleTypeDef *htim);
 
 void update_obstacle(TIM_HandleTypeDef *htim);
+
+uint16_t get_obstacles_passed(void);

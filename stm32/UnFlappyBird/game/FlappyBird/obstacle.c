@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 AllObstacle UnFlappyObstacle;
+static uint16_t obstacles_passed = 0;
 void ssd1306_DrawObstacle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2){
     ssd1306_FillRectangle(x1, 0, x2, y1, White);
     ssd1306_FillRectangle(x1, y2, x2, 63, White);
@@ -11,12 +12,17 @@ void ssd1306_DrawObstacle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2){
 
 void init_obstacle(TIM_HandleTypeDef *htim) {
   UnFlappyObstacle.size_queue = 1;
+  obstacles_passed = 0;
   for (uint8_t i = 0; i < NUM_OBSTACLE; i++) {
     UnFlappyObstacle.all_obstacle[i].x1 = 127;
     UnFlappyObstacle.all_obstacle[i].x2 = 127;
     UnFlappyObstacle.all_obstacle[i].y1 = __HAL_TIM_GET_COUNTER(htim);
     UnFlappyObstacle.all_obstacle[i].y2 = UnFlappyObstacle.all_obstacle[i].y1 + 30;
   }
+}
+
+uint16_t get_obstacles_passed(void) {
+  return obstacles_passed;
 }
 
 void update_obstacle(TIM_HandleTypeDef *htim){
@@ -39,6 +45,7 @@ void update_obstacle(TIM_HandleTypeDef *htim){
       } else if (curr_obstacle->x1 <= 0){
         curr_obstacle->x2 += vx * dt;
         if (curr_obstacle->x2 <= 1) {
+          obstacles_passed += 1;  // Increment score
           UnFlappyObstacle.all_obstacle[i].x1 = 127;
           UnFlappyObstacle.all_obstacle[i].x2 = 127;
           UnFlappyObstacle.all_obstacle[i].y1 = __HAL_TIM_GET_COUNTER(htim);

@@ -25,6 +25,7 @@
 #include <obstacle.h>
 #include <gravity.h>
 #include <stdint.h>
+#include "mainmenu.h"
 #include "home.h"
 #include "gameover.h"
 #include <stdio.h>
@@ -56,8 +57,8 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-typedef enum { APP_MENU = 0, APP_PLAY, APP_GAME_OVER } AppState_t;
-static AppState_t app_state = APP_MENU;
+typedef enum { APP_MAIN_MENU = 0, APP_MENU, APP_PLAY, APP_GAME_OVER } AppState_t;
+static AppState_t app_state = APP_MAIN_MENU;
 
 /* USER CODE END PV */
 
@@ -75,14 +76,26 @@ static void MX_ADC1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// selected game index returned to home menu
+static uint8_t mainmenu_selected = 0;
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   if (GPIO_Pin == GPIO_PIN_1){
-    if (app_state == APP_MENU){
-      // app_state = APP_PLAY;
-      app_state = APP_GAME_OVER;
-      ssd1306_InvertRectangle(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
-    }else if (app_state == APP_PLAY){
+    if (app_state == APP_MAIN_MENU){
+      uint8_t sel = MainMenu_ButtonPress();
+      if (sel != 255){
+        mainmenu_selected = sel;
+        // update home screen title and return to menu UI
+        Home_SetTitle(MainMenu_GetGameName(sel));
+        app_state = APP_MENU;
+      }
+    } else if (app_state == APP_MENU){
+      app_state = APP_PLAY;
+      reset_game(&htim1);
+    } else if (app_state == APP_PLAY){
       vy = fly_vy;
+    } else if (app_state == APP_GAME_OVER){
+      GameOver_SetRestartPressed();
     }
   }
 }
@@ -132,6 +145,7 @@ int main(void)
   HAL_TIM_Base_Start(&htim1);
   ssd1306_Init();
   init_obstacle(&htim1);
+  MainMenu_Init();
   Home_Init();
   /* USER CODE END 2 */
 
@@ -139,7 +153,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if (app_state == APP_MENU){
+    if (app_state == APP_MAIN_MENU){
+      MainMenu_Render();
+    } else if (app_state == APP_MENU){
       Home_Render();
     } else if (app_state == APP_PLAY) {
       for (uint8_t i = 0;i<FRAME_COUNT;i++){

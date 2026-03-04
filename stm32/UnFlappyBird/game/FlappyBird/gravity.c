@@ -31,7 +31,8 @@ void reset_game(TIM_HandleTypeDef *htim){
 }
 
 uint16_t get_score(void){
-  return score;
+  extern uint16_t get_obstacles_passed(void);
+  return get_obstacles_passed() + 1;
 }
 
 uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim ){
@@ -39,12 +40,28 @@ uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim ){
     y += vy*dt;
     DrawBitmapTransparentWhite(x, y, epd_bitmap_allArray[i], w, h, htim);
     
-    // Update score based on obstacles passed
-    score = UnFlappyObstacle.size_queue - 1;
+    // Smaller hitbox for collision detection (inset by 4 pixels)
+    float hitbox_x = x + 4;
+    float hitbox_y = y + 4;
+    float hitbox_w = w - 8;
+    float hitbox_h = h - 8;
     
     // Check collision with ground or ceiling
-    if (y <= 0 || y >= 64 - h){
+    if (hitbox_y <= 0 || hitbox_y + hitbox_h >= 64){
         return 1;  // Bird died
+    }
+    
+    // Check collision with obstacles
+    for (uint8_t j = 0; j < UnFlappyObstacle.size_queue; j++){
+        Obstacle *obs = UnFlappyObstacle.all_obstacle + j;
+        
+        // Check if bird hitbox overlaps with obstacle
+        if (hitbox_x + hitbox_w > obs->x1 && hitbox_x < obs->x2){
+            // Check if bird hitbox overlaps with obstacle gap or walls
+            if (hitbox_y < obs->y1 || hitbox_y + hitbox_h > obs->y2){
+                return 1;  // Bird hit obstacle
+            }
+        }
     }
     
     return 0;  // Bird alive

@@ -27,19 +27,11 @@ void GameOver_Init(uint16_t final_score){
 }
 
 void GameOver_Update(void){
-  if (HAL_GPIO_ReadPin(RESTART_BTN_PORT, RESTART_BTN_PIN) == GPIO_PIN_SET){
-    if (debounce < DEBOUNCE_COUNT) debounce++;
-    
-    // Register press only once when debounce reaches threshold
-    if (debounce >= DEBOUNCE_COUNT && !pressed_registered){
-      restart_pressed = 1;
-      pressed_registered = 1;
-    }
-  } else {
-    // Button released, reset debounce
-    if (debounce > 0) debounce = 0;
-    pressed_registered = 0;
-  }
+  /* Button handling is now done via interrupt in main.c HAL_GPIO_EXTI_Callback */
+}
+
+void GameOver_SetRestartPressed(void){
+  restart_pressed = 1;
 }
 
 void GameOver_Render(void){
