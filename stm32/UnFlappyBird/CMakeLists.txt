@@ -53,6 +53,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/home.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameover.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/mainmenu.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameselect.c
 )
 
 # Add include paths

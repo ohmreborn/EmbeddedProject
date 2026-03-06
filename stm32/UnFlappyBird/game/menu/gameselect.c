@@ -1,0 +1,71 @@
+#include "gameselect.h"
+#include "ssd1306.h"
+#include "ssd1306_fonts.h"
+#include <stm32l4xx_hal.h>
+
+// list of games - add more entries as you add games
+static const char *games[] = {"UNFLAPPY", "GAME2"};
+#define NUM_GAMES (sizeof(games)/sizeof(games[0]))
+
+// state
+static uint8_t current_index = 0;
+
+void GameSelect_Init(void){
+  current_index = 0;
+}
+
+void GameSelect_Render(void){
+  ssd1306_Fill(Black);
+  
+  // title
+  ssd1306_SetCursor(0, 0);
+  ssd1306_WriteString("SELECT GAME", Font_7x10, White);
+  
+  // instructions
+  ssd1306_SetCursor(0, 12);
+  ssd1306_WriteString("A4: Navigate", Font_7x10, White);
+  
+  ssd1306_SetCursor(0, 24);
+  ssd1306_WriteString("A8: Select", Font_7x10, White);
+  
+  // list entries
+  for(uint8_t i = 0; i < NUM_GAMES; i++){
+    uint8_t y = 40 + i * 12;
+    if(i == current_index){
+      // highlight current selection
+      ssd1306_DrawRectangle(0, y - 1, 127, y + 10, White);
+      ssd1306_SetCursor(2, y);
+      ssd1306_WriteString((char*)games[i], Font_7x10, Black);
+    } else {
+      ssd1306_SetCursor(2, y);
+      ssd1306_WriteString((char*)games[i], Font_7x10, White);
+    }
+  }
+  
+  ssd1306_UpdateScreen();
+}
+
+void GameSelect_NavigateUp(void){
+  if(current_index > 0){
+    current_index--;
+  } else {
+    current_index = NUM_GAMES - 1;
+  }
+}
+
+void GameSelect_NavigateDown(void){
+  current_index = (current_index + 1) % NUM_GAMES;
+}
+
+uint8_t GameSelect_ConfirmSelection(void){
+  return current_index;
+}
+
+const char *GameSelect_GetCurrentGameName(void){
+  return games[current_index];
+}
+
+const char *GameSelect_GetGameName(uint8_t idx){
+  if(idx < NUM_GAMES) return games[idx];
+  return "";
+}

@@ -28,6 +28,7 @@
 #include "mainmenu.h"
 #include "home.h"
 #include "gameover.h"
+#include "gameselect.h"
 #include <stdio.h>
 
 /* USER CODE END Includes */
@@ -57,8 +58,8 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-typedef enum { APP_MAIN_MENU = 0, APP_MENU, APP_PLAY, APP_GAME_OVER } AppState_t;
-static AppState_t app_state = APP_MAIN_MENU;
+typedef enum { APP_GAME_SELECT = 0, APP_MAIN_MENU, APP_MENU, APP_PLAY, APP_GAME_OVER } AppState_t;
+static AppState_t app_state = APP_GAME_SELECT;
 
 /* USER CODE END PV */
 
@@ -79,8 +80,43 @@ static void MX_ADC1_Init(void);
 // selected game index returned to home menu
 static uint8_t mainmenu_selected = 0;
 
+// Debounce timers for A4 and A8
+static uint32_t a4_last_press = 0;
+static uint32_t a8_last_press = 0;
+static const uint32_t DEBOUNCE_MS = 200;
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if (GPIO_Pin == GPIO_PIN_1){
+  uint32_t now = HAL_GetTick();
+  
+  if (GPIO_Pin == GPIO_PIN_4){
+    // A4 pin - Navigation
+    if (now - a4_last_press >= DEBOUNCE_MS){
+      a4_last_press = now;
+      if (app_state == APP_GAME_SELECT){
+        GameSelect_NavigateUp();
+      }
+    }
+  } else if (GPIO_Pin == GPIO_PIN_8){
+    // A8 pin - Confirmation
+    if (now - a8_last_press >= DEBOUNCE_MS){
+      a8_last_press = now;
+      if (app_state == APP_GAME_SELECT){
+        uint8_t sel = GameSelect_ConfirmSelection();
+        mainmenu_selected = sel;
+        // update home screen title and go to menu
+        Home_SetTitle(GameSelect_GetGameName(sel));
+        app_state = APP_MENU;
+      } else if (app_state == APP_MENU){
+        app_state = APP_PLAY;
+        reset_game(&htim1);
+      } else if (app_state == APP_PLAY){
+        vy = fly_vy;
+      } else if (app_state == APP_GAME_OVER){
+        GameOver_SetRestartPressed();
+      }
+    }
+  } else if (GPIO_Pin == GPIO_PIN_1){
+    // Original GPIO_PIN_1 button (kept for backward compatibility)
     if (app_state == APP_MAIN_MENU){
       uint8_t sel = MainMenu_ButtonPress();
       if (sel != 255){
@@ -146,13 +182,16 @@ int main(void)
   ssd1306_Init();
   init_obstacle(&htim1);
   Home_Init();
+  GameSelect_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if (app_state == APP_MAIN_MENU){
+    if (app_state == APP_GAME_SELECT){
+      GameSelect_Render();
+    } else if (app_state == APP_MAIN_MENU){
       MainMenu_Render();
     } else if (app_state == APP_MENU){
       Home_Render();
