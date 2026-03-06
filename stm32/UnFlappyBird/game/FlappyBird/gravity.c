@@ -35,7 +35,7 @@ uint16_t get_score(void){
   return get_obstacles_passed() + 1;
 }
 
-uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim ){
+uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc){
     vy += g*dt;
     y += vy*dt;
     DrawBitmapTransparentWhite(x, y, epd_bitmap_allArray[i], w, h, htim);
@@ -54,7 +54,6 @@ uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim ){
     // Check collision with obstacles
     for (uint8_t j = 0; j < UnFlappyObstacle.size_queue; j++){
         Obstacle *obs = UnFlappyObstacle.all_obstacle + j;
-        
         // Check if bird hitbox overlaps with obstacle
         if (hitbox_x + hitbox_w > obs->x1 && hitbox_x < obs->x2){
             // Check if bird hitbox overlaps with obstacle gap or walls
@@ -63,6 +62,15 @@ uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim ){
             }
         }
     }
-    
+
+    HAL_ADC_Start(hadc);
+    HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY);
+    uint32_t raw = HAL_ADC_GetValue(hadc);
+    float ratio = ((float)raw + 1) / 4096.0f;
+    vx = base_vx * ratio;
+    vy *= ratio;
+    g = base_g * ratio;
+    fly_vy = base_fly_vy * ratio;
+
     return 0;  // Bird alive
 }

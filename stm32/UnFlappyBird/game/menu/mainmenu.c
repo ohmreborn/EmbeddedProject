@@ -4,18 +4,13 @@
 #include <stm32l4xx_hal.h>
 
 // list of games - add more entries as you add games
-static const char *games[] = {"UNFLAPPY"};
+static const char *games[] = {"UNFLAPPY", "GAME2"};
 #define NUM_GAMES (sizeof(games)/sizeof(games[0]))
 
 // state
 static uint8_t current_index = 0;
 static uint32_t last_click_ms = 0;
 static uint8_t click_count = 0;
-
-void MainMenu_Init(void){
-  ssd1306_Fill(Black);
-  ssd1306_UpdateScreen();
-}
 
 void MainMenu_Render(void){
   ssd1306_Fill(Black);

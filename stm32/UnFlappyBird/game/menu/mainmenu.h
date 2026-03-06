@@ -2,7 +2,6 @@
 
 #include <stdint.h>
 
-void MainMenu_Init(void);
 void MainMenu_Render(void);
 
 // Called when button press occurs in main menu. Returns index of selected game

@@ -16,12 +16,6 @@ static uint8_t title_w;
 static uint8_t title_x;
 static const uint8_t title_y = ui_margin + 2; // a bit spacing above title
 
-// recompute dynamic values when title changes
-static void update_title_metrics(void){
-  title_len = strlen(home_title);
-  title_w = (uint8_t)title_len * 11; // Font_11x18 width approx
-  title_x = (uint8_t)((128 - title_w) / 2);
-}
 
 const char scroll_text[] = "Press button to start";
 const uint8_t btn_w = 80;
@@ -38,10 +32,15 @@ const uint8_t txt_h = 10;                     // Font_7x10 height
 const uint8_t txt_x = x1 + (btn_w > txt_w ? (btn_w - txt_w) / 2 : 0);
 const uint8_t txt_y = btn_y1 + (btn_h > txt_h ? (btn_h - txt_h) / 2 : 0);
 
+// recompute dynamic values when title changes
+static void update_title_metrics(void){
+  title_len = strlen(home_title);
+  title_w = (uint8_t)title_len * 11; // Font_11x18 width approx
+  title_x = (uint8_t)((128 - title_w) / 2);
+}
+
 void Home_Init(void){
   update_title_metrics();
-  ssd1306_Fill(Black);
-  ssd1306_UpdateScreen();
 }
 
 void Home_SetTitle(const char *title){

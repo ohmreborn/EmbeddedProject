@@ -145,7 +145,6 @@ int main(void)
   HAL_TIM_Base_Start(&htim1);
   ssd1306_Init();
   init_obstacle(&htim1);
-  MainMenu_Init();
   Home_Init();
   /* USER CODE END 2 */
 
@@ -159,20 +158,9 @@ int main(void)
       Home_Render();
     } else if (app_state == APP_PLAY) {
       for (uint8_t i = 0;i<FRAME_COUNT;i++){
-        /* sample ADC and scale game parameters */
-        HAL_ADC_Start(&hadc1);
-        HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-        uint32_t raw = HAL_ADC_GetValue(&hadc1);
-        float ratio = ((float)raw + 1) / 4096.0f;
-        vx = base_vx * ratio;
-        vy *= ratio;
-        g = base_g * ratio;
-        fly_vy = base_fly_vy * ratio;
-
         ssd1306_Fill(Black);
         update_obstacle(&htim1);
-
-        if (update_bird(i, &htim1)){
+        if (update_bird(i, &htim1, &hadc1)){
           /* Bird died, transition to game over */
           app_state = APP_GAME_OVER;
           GameOver_Init(get_score());
@@ -188,11 +176,11 @@ int main(void)
         reset_game(&htim1);
       }
     }
+  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
-  }
 }
 
 /**
@@ -458,6 +446,10 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PA1 */
   GPIO_InitStruct.Pin = GPIO_PIN_1;
@@ -470,6 +462,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(START_BTN_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
