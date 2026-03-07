@@ -48,12 +48,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ssd1306/ssd1306.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ssd1306/ssd1306_fonts.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/bird.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/gravity.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/obstacle.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/home.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameover.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/mainmenu.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/FlappyBirdMain.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameselect.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gamestart.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameover.c
 )
 
 # Add include paths

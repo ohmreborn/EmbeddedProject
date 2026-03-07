@@ -1,11 +1,13 @@
 /* Game Over menu implementation */
-#include "gameover.h"
-#include "ssd1306.h"
-#include "ssd1306_fonts.h"
-#include "main.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <gameover.h>
+
+#include <ssd1306.h>
+#include <ssd1306_fonts.h>
+
 
 #define RESTART_BTN_PORT GPIOA
 #define RESTART_BTN_PIN  GPIO_PIN_3

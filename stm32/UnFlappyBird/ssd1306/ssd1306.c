@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>  // For memcpy
-#include <gravity.h>
 
 void ssd1306_Reset(void) {
     /* for I2C - do nothing */
@@ -558,6 +557,11 @@ uint8_t ssd1306_GetDisplayOn() {
     return SSD1306.DisplayOn;
 }
 
+void ssd1306_DrawObstacle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2){
+    ssd1306_FillRectangle(x1, 0, x2, y1, White);
+    ssd1306_FillRectangle(x1, y2, x2, 63, White);
+}
+
 void DrawBitmapTransparentWhite(uint8_t x, uint8_t y,
                                 const uint8_t *bitmap,
                                 uint8_t w, uint8_t h, TIM_HandleTypeDef *htim)
@@ -576,13 +580,6 @@ void DrawBitmapTransparentWhite(uint8_t x, uint8_t y,
             // original 1 = background
             if (!bit)
             {
-                uint8_t c = y+j;
-                uint8_t a = SSD1306_Buffer[x+i + (c / 8) * SSD1306_WIDTH];
-                uint8_t b = 1<<(c%8);
-                uint8_t d = a & b;
-                if (d){
-                    reset_game(htim);
-                }
                 ssd1306_DrawPixel(x + i, y + j, White);
             }
         }

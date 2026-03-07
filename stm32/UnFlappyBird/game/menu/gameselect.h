@@ -18,6 +18,3 @@ uint8_t GameSelect_ConfirmSelection(void);
 
 // Get currently selected game name
 const char *GameSelect_GetCurrentGameName(void);
-
-// Get game name by index
-const char *GameSelect_GetGameName(uint8_t idx);

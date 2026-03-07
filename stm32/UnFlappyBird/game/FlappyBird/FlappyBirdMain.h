@@ -1,7 +1,6 @@
 #pragma once
-#include "stm32l4xx_hal.h"
-#include <ssd1306.h>
 #include <stdint.h>
+#include <stm32l4xx.h>
 
 #define OBSTACLE_LENGTH  8
 #define DISTANCE_OBSTACLE 32
@@ -20,12 +19,13 @@ typedef struct {
 } AllObstacle;
 
 
-extern AllObstacle UnFlappyObstacle;
-
-void ssd1306_DrawObstacle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
-
+void reset_game(TIM_HandleTypeDef *htim);
 void init_obstacle(TIM_HandleTypeDef *htim);
 
+uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc);
 void update_obstacle(TIM_HandleTypeDef *htim);
 
 uint16_t get_obstacles_passed(void);
+
+uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc);
+void FlappyBirdPlay(void);

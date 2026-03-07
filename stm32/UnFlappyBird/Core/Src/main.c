@@ -18,17 +18,19 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "FlappyBirdMain.h"
+#include "ssd1306.h"
+#include "stm32l4xx.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <bird.h>
-#include <obstacle.h>
-#include <gravity.h>
+
+#include <gamestart.h>
+#include <gameover.h>
+#include <gameselect.h>
+
 #include <stdint.h>
-#include "mainmenu.h"
-#include "home.h"
-#include "gameover.h"
-#include "gameselect.h"
 #include <stdio.h>
 
 /* USER CODE END Includes */
@@ -58,8 +60,13 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-typedef enum { APP_GAME_SELECT = 0, APP_MAIN_MENU, APP_MENU, APP_PLAY, APP_GAME_OVER } AppState_t;
-static AppState_t app_state = APP_GAME_SELECT;
+typedef enum { 
+  GAME_SELECT, 
+  GAME_MAIN_MENU, 
+  GAME_PLAY, 
+  GAME_OVER
+} AppState_t;
+static AppState_t app_state = GAME_SELECT;
 
 /* USER CODE END PV */
 
@@ -77,62 +84,36 @@ static void MX_ADC1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// selected game index returned to home menu
-static uint8_t mainmenu_selected = 0;
-
-// Debounce timers for A4 and A8
-static uint32_t a4_last_press = 0;
-static uint32_t a8_last_press = 0;
-static const uint32_t DEBOUNCE_MS = 200;
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  uint32_t now = HAL_GetTick();
-  
-  if (GPIO_Pin == GPIO_PIN_4){
-    // A4 pin - Navigation
-    if (now - a4_last_press >= DEBOUNCE_MS){
-      a4_last_press = now;
-      if (app_state == APP_GAME_SELECT){
-        GameSelect_NavigateUp();
-      }
+  if (GPIO_Pin == GPIO_PIN_1){
+    // A1 pin - Navigation
+    if (app_state == GAME_SELECT) {
+      GameSelect_NavigateUp();
+    }else if (app_state == GAME_MAIN_MENU){
+      app_state = GAME_SELECT;
+      GameSelect_Init();
     }
-  } else if (GPIO_Pin == GPIO_PIN_8){
-    // A8 pin - Confirmation
-    if (now - a8_last_press >= DEBOUNCE_MS){
-      a8_last_press = now;
-      if (app_state == APP_GAME_SELECT){
-        uint8_t sel = GameSelect_ConfirmSelection();
-        mainmenu_selected = sel;
-        // update home screen title and go to menu
-        Home_SetTitle(GameSelect_GetGameName(sel));
-        app_state = APP_MENU;
-      } else if (app_state == APP_MENU){
-        app_state = APP_PLAY;
-        reset_game(&htim1);
-      } else if (app_state == APP_PLAY){
-        vy = fly_vy;
-      } else if (app_state == APP_GAME_OVER){
-        GameOver_SetRestartPressed();
-      }
+  } else if (GPIO_Pin == GPIO_PIN_5) {
+    // A4(pa5) pin - Confirmation
+    if (app_state == GAME_SELECT) {
+      app_state = GAME_MAIN_MENU;
+      const char *title = GameSelect_GetCurrentGameName();
+      SetGameTitle(title);
+    }else if (app_state == GAME_MAIN_MENU){
+      app_state = GAME_PLAY;
+      GameStart();
+      // reset_game(&htim1);
+    }else if (app_state == GAME_PLAY){
+      FlappyBirdPlay();
     }
-  } else if (GPIO_Pin == GPIO_PIN_1){
-    // Original GPIO_PIN_1 button (kept for backward compatibility)
-    if (app_state == APP_MAIN_MENU){
-      uint8_t sel = MainMenu_ButtonPress();
-      if (sel != 255){
-        mainmenu_selected = sel;
-        // update home screen title and return to menu UI
-        Home_SetTitle(MainMenu_GetGameName(sel));
-        app_state = APP_MENU;
-      }
-    } else if (app_state == APP_MENU){
-      app_state = APP_PLAY;
-      reset_game(&htim1);
-    } else if (app_state == APP_PLAY){
-      vy = fly_vy;
-    } else if (app_state == APP_GAME_OVER){
-      GameOver_SetRestartPressed();
-    }
+    // } else if (app_state == APP_MENU) {
+    //   app_state = APP_PLAY;
+    //   reset_game(&htim1);
+    // } else if (app_state == APP_PLAY) {
+    //   vy = fly_vy;
+    // } else if (app_state == APP_GAME_OVER) {
+    //   GameOver_SetRestartPressed();
+    // }
   }
 }
 
@@ -180,8 +161,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim1);
   ssd1306_Init();
-  init_obstacle(&htim1);
-  Home_Init();
   GameSelect_Init();
   /* USER CODE END 2 */
 
@@ -189,31 +168,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if (app_state == APP_GAME_SELECT){
+    if (app_state == GAME_SELECT){
       GameSelect_Render();
-    } else if (app_state == APP_MAIN_MENU){
-      MainMenu_Render();
-    } else if (app_state == APP_MENU){
-      Home_Render();
-    } else if (app_state == APP_PLAY) {
-      for (uint8_t i = 0;i<FRAME_COUNT;i++){
-        ssd1306_Fill(Black);
-        update_obstacle(&htim1);
-        if (update_bird(i, &htim1, &hadc1)){
-          /* Bird died, transition to game over */
-          app_state = APP_GAME_OVER;
-          GameOver_Init(get_score());
-          break;
-        }
-        ssd1306_UpdateScreen();
+      while (app_state == GAME_SELECT);
+    } else if (app_state == GAME_MAIN_MENU){
+      while (app_state == GAME_MAIN_MENU);
+    }else if (app_state == GAME_PLAY){
+      if (FlappyBirdIdle(&htim1, &hadc1)){
+        app_state = GAME_OVER;
       }
-    } else if (app_state == APP_GAME_OVER) {
-      GameOver_Update();
+    }else{ // GAME_OVER
+      GameOver_Init(get_obstacles_passed());
       GameOver_Render();
-      if (GameOver_IsRestartPressed()) {
-        app_state = APP_PLAY;
-        reset_game(&htim1);
-      }
+      while (app_state == GAME_OVER);
     }
   }
     /* USER CODE END WHILE */
@@ -490,8 +457,8 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pins : PA1 PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -501,12 +468,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(START_BTN_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB3 */
   GPIO_InitStruct.Pin = GPIO_PIN_3;
@@ -518,6 +479,9 @@ static void MX_GPIO_Init(void)
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

@@ -1,11 +1,10 @@
 #include "gameselect.h"
 #include "ssd1306.h"
 #include "ssd1306_fonts.h"
-#include <stm32l4xx_hal.h>
 
 // list of games - add more entries as you add games
 static const char *games[] = {"UNFLAPPY", "GAME2"};
-#define NUM_GAMES (sizeof(games)/sizeof(games[0]))
+#define NUM_GAMES 2
 
 // state
 static uint8_t current_index = 0;
@@ -23,10 +22,10 @@ void GameSelect_Render(void){
   
   // instructions
   ssd1306_SetCursor(0, 12);
-  ssd1306_WriteString("A4: Navigate", Font_7x10, White);
+  ssd1306_WriteString("A1: Navigate", Font_7x10, White);
   
   ssd1306_SetCursor(0, 24);
-  ssd1306_WriteString("A8: Select", Font_7x10, White);
+  ssd1306_WriteString("A4: Select", Font_7x10, White);
   
   // list entries
   for(uint8_t i = 0; i < NUM_GAMES; i++){
@@ -46,15 +45,8 @@ void GameSelect_Render(void){
 }
 
 void GameSelect_NavigateUp(void){
-  if(current_index > 0){
-    current_index--;
-  } else {
-    current_index = NUM_GAMES - 1;
-  }
-}
-
-void GameSelect_NavigateDown(void){
-  current_index = (current_index + 1) % NUM_GAMES;
+  current_index = (current_index+1) % NUM_GAMES;
+  GameSelect_Render();
 }
 
 uint8_t GameSelect_ConfirmSelection(void){
@@ -63,9 +55,4 @@ uint8_t GameSelect_ConfirmSelection(void){
 
 const char *GameSelect_GetCurrentGameName(void){
   return games[current_index];
-}
-
-const char *GameSelect_GetGameName(uint8_t idx){
-  if(idx < NUM_GAMES) return games[idx];
-  return "";
 }

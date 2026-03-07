@@ -109,6 +109,7 @@ void ssd1306_WriteData(uint8_t* buffer, size_t buff_size);
 SSD1306_Error_t ssd1306_FillBuffer(uint8_t* buf, uint32_t len);
 
 
+void ssd1306_DrawObstacle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
 void DrawBitmapTransparentWhite(uint8_t x, uint8_t y,
                                 const uint8_t *bitmap,
                                 uint8_t w, uint8_t h, TIM_HandleTypeDef *htim);
