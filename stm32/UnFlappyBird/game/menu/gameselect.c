@@ -1,10 +1,12 @@
 #include "gameselect.h"
 #include "ssd1306.h"
 #include "ssd1306_fonts.h"
+
 #include <stdint.h>
 
 // list of games - add more entries as you add games
 static const char *games[] = {"UNFLAPPY", "GAME2"};
+static const uint8_t is_multi_player[2] = {0, 1};
 #define NUM_GAMES 2
 
 // state
@@ -52,6 +54,11 @@ void GameSelect_NavigateUp(void){
 
 uint8_t GameSelect_CurrentIndex(void){
   return current_index;
+}
+
+
+uint8_t GameSelect_IsMultiPlayer(void){
+  return is_multi_player[current_index];
 }
 
 uint8_t GameSelect_NUMGame(void){

@@ -118,10 +118,6 @@ static void update_obstacle(TIM_HandleTypeDef *htim){
   }
 }
 
-uint16_t FlappyBirdGetScore(void) {
-  return score;
-}
-
 void FlappyBirdReset(TIM_HandleTypeDef *htim){
   y = 20;
   vy = 0;
@@ -149,4 +145,8 @@ uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc, uint32_
 
 void FlappyBirdPlay(void){
   vy = fly_vy;
+}
+
+uint16_t FlappyBirdGetScore(void) {
+  return score;
 }

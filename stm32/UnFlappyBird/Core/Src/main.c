@@ -65,7 +65,6 @@ typedef enum {
   GAME_SELECT, 
   GAME_MAIN_MENU, 
   GAME_PLAY, 
-  GAME_PAUSE,
   GAME_OVER
 } AppState_t;
 static AppState_t app_state = GAME_SELECT;
@@ -94,11 +93,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
     }else if (app_state == GAME_MAIN_MENU){
       app_state = GAME_SELECT; // back to game select
       GameSelect_Init();
-    }else if (app_state == GAME_PLAY){
-      app_state = GAME_PAUSE;
-    }else if (app_state == GAME_PAUSE){
-      app_state = GAME_PLAY;
-    } else if (app_state == GAME_OVER) {
+    }else if (app_state == GAME_PLAY && GameSelect_IsMultiPlayer()){
+      GamePlay_Play2();
+    }else if (app_state == GAME_OVER) {
       app_state = GAME_SELECT;
     }
   } else if (GPIO_Pin == GPIO_PIN_5) {
@@ -112,8 +109,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
       GamePlay_Reset(&htim1);
     }else if (app_state == GAME_PLAY){
       GamePlay_Play();
-    }else if (app_state == GAME_PAUSE){
-      app_state = GAME_SELECT;
     }else if (app_state == GAME_OVER){
       app_state = GAME_SELECT;
       GameOver_Restart();
@@ -186,10 +181,7 @@ int main(void)
           app_state = GAME_OVER;
         }
       }
-    }else if (app_state == GAME_PAUSE){
-      while (app_state == GAME_PAUSE);
-    }
-    else{ // GAME_OVER
+    }else{ // GAME_OVER
       GameOver_Init();
       GameOver_Render();
       while (app_state == GAME_OVER);
