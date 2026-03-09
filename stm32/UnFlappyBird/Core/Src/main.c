@@ -18,17 +18,18 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "FlappyBirdMain.h"
-#include "ssd1306.h"
-#include "stm32l4xx.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <bird.h>
+#include "ssd1306.h"
+#include "stm32l4xx.h"
+#include "stm32l4xx_hal_adc.h"
+#include "stm32l4xx_hal_def.h"
 
 #include <gamestart.h>
 #include <gameover.h>
 #include <gameselect.h>
+#include <gameplay.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -64,6 +65,7 @@ typedef enum {
   GAME_SELECT, 
   GAME_MAIN_MENU, 
   GAME_PLAY, 
+  GAME_PAUSE,
   GAME_OVER
 } AppState_t;
 static AppState_t app_state = GAME_SELECT;
@@ -90,30 +92,32 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
     if (app_state == GAME_SELECT) {
       GameSelect_NavigateUp();
     }else if (app_state == GAME_MAIN_MENU){
-      app_state = GAME_SELECT;
+      app_state = GAME_SELECT; // back to game select
       GameSelect_Init();
+    }else if (app_state == GAME_PLAY){
+      app_state = GAME_PAUSE;
+    }else if (app_state == GAME_PAUSE){
+      app_state = GAME_PLAY;
+    } else if (app_state == GAME_OVER) {
+      app_state = GAME_SELECT;
     }
   } else if (GPIO_Pin == GPIO_PIN_5) {
     // A4(pa5) pin - Confirmation
     if (app_state == GAME_SELECT) {
-      app_state = GAME_MAIN_MENU;
-      const char *title = GameSelect_GetCurrentGameName();
-      SetGameTitle(title);
+      app_state = GAME_MAIN_MENU; // go to game main menu
+      GameStart_SetGameTitle();
     }else if (app_state == GAME_MAIN_MENU){
       app_state = GAME_PLAY;
-      GameStart();
-      // reset_game(&htim1);
+      GameStart_Start();
+      GamePlay_Reset(&htim1);
     }else if (app_state == GAME_PLAY){
-      FlappyBirdPlay();
+      GamePlay_Play();
+    }else if (app_state == GAME_PAUSE){
+      app_state = GAME_SELECT;
+    }else if (app_state == GAME_OVER){
+      app_state = GAME_SELECT;
+      GameOver_Restart();
     }
-    // } else if (app_state == APP_MENU) {
-    //   app_state = APP_PLAY;
-    //   reset_game(&htim1);
-    // } else if (app_state == APP_PLAY) {
-    //   vy = fly_vy;
-    // } else if (app_state == APP_GAME_OVER) {
-    //   GameOver_SetRestartPressed();
-    // }
   }
 }
 
@@ -174,11 +178,19 @@ int main(void)
     } else if (app_state == GAME_MAIN_MENU){
       while (app_state == GAME_MAIN_MENU);
     }else if (app_state == GAME_PLAY){
-      if (FlappyBirdIdle(&htim1, &hadc1)){
-        app_state = GAME_OVER;
+      while (app_state == GAME_PLAY){
+        HAL_ADC_Start(&hadc1);
+        HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+        uint32_t ldr = HAL_ADC_GetValue(&hadc1);
+        if (GamePlay_Idle(&htim1, &hadc1, ldr)){
+          app_state = GAME_OVER;
+        }
       }
-    }else{ // GAME_OVER
-      GameOver_Init(get_obstacles_passed());
+    }else if (app_state == GAME_PAUSE){
+      while (app_state == GAME_PAUSE);
+    }
+    else{ // GAME_OVER
+      GameOver_Init();
       GameOver_Render();
       while (app_state == GAME_OVER);
     }

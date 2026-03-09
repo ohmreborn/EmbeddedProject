@@ -1,7 +1,10 @@
+#include "ssd1306_fonts.h"
 #include <bird.h>
 #include <FlappyBirdMain.h>
 
 #include <ssd1306.h>
+
+#include <stdio.h>
 #include <stdint.h>
 
 static const float base_g = 500;
@@ -14,28 +17,22 @@ static float vy = base_vy;
 static float vx = base_vx;
 static float fly_vy = base_fly_vy;
 
-static uint8_t x = 50;
+static const uint8_t x = 50;
 static float y = 20;
-static uint8_t w = 22;
-static uint8_t h = 17;
+static const uint8_t w = 22;
+static const uint8_t h = 17;
+static uint8_t i = 0;
 
-static float dt = 1e-2;
-
+static const float dt = 1e-2;
+// static uint16_t obstacles_passed = 0;
 static uint16_t score = 0;
-static uint16_t obstacles_passed = 0;
-
+static char score_str[16];
 static AllObstacle UnFlappyObstacle;
 
-void reset_game(TIM_HandleTypeDef *htim){
-  y = 20;
-  vy = 0;
-  score = 0;
-  init_obstacle(htim);
-}
 
-void init_obstacle(TIM_HandleTypeDef *htim) {
+static void init_obstacle(TIM_HandleTypeDef *htim) {
   UnFlappyObstacle.size_queue = 1;
-  obstacles_passed = 0;
+  score = 0;
   for (uint8_t i = 0; i < NUM_OBSTACLE; i++) {
     UnFlappyObstacle.all_obstacle[i].x1 = 127;
     UnFlappyObstacle.all_obstacle[i].x2 = 127;
@@ -44,9 +41,14 @@ void init_obstacle(TIM_HandleTypeDef *htim) {
   }
 }
 
-uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc){
+static uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc){
   vy += g * dt;
   y += vy * dt;
+  // get_obstacles_passed
+  ssd1306_SetCursor(0, 0);
+  sprintf(score_str, "%d", score);
+  ssd1306_WriteString(score_str, Font_6x8, White);
+  ssd1306_SetCursor(110, 0);
   DrawBitmapTransparentWhite(x, (uint8_t)y, epd_bitmap_allArray[i], w, h, htim);
 
   // Smaller hitbox for collision detection (inset by 4 pixels)
@@ -72,19 +74,10 @@ uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc)
     }
   }
 
-  HAL_ADC_Start(hadc);
-  HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY);
-  uint32_t raw = HAL_ADC_GetValue(hadc);
-  float ratio = ((float)raw + 1) / 4096.0f;
-  vx = base_vx * ratio;
-  vy *= ratio;
-  g = base_g * ratio;
-  fly_vy = base_fly_vy * ratio;
-
   return 0; // Bird alive
 }
 
-void update_obstacle(TIM_HandleTypeDef *htim){
+static void update_obstacle(TIM_HandleTypeDef *htim){
   for (uint8_t i = 0; i < NUM_OBSTACLE; i++) {
     ssd1306_DrawObstacle((uint8_t)UnFlappyObstacle.all_obstacle[i].x1,
                          UnFlappyObstacle.all_obstacle[i].y1,
@@ -95,7 +88,7 @@ void update_obstacle(TIM_HandleTypeDef *htim){
   for (uint8_t i = 0; i < UnFlappyObstacle.size_queue; i++) {
     Obstacle *curr_obstacle = UnFlappyObstacle.all_obstacle + i;
     if ((uint8_t)curr_obstacle->x1 == x + w){
-      obstacles_passed ++;
+      score++;
     }
     if (curr_obstacle->x2 == 127) {
       curr_obstacle->x1 += vx * dt;
@@ -125,22 +118,33 @@ void update_obstacle(TIM_HandleTypeDef *htim){
   }
 }
 
-uint16_t get_obstacles_passed(void) {
-  return obstacles_passed;
+uint16_t FlappyBirdGetScore(void) {
+  return score;
 }
 
-uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc){
-    uint8_t i = 0;
-    while (1){
-      ssd1306_Fill(Black);
-      update_obstacle(htim);
-      if (update_bird(i, htim, hadc)) {
-        return 1;
-      }
-      i = (i+1) % 8;
-      ssd1306_UpdateScreen();
-    }
+void FlappyBirdReset(TIM_HandleTypeDef *htim){
+  y = 20;
+  vy = 0;
+  i = 0;
+  init_obstacle(htim);
+}
+
+uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc, uint32_t ldr){
+  ssd1306_Fill(Black);
+
+  float ratio = ((float)ldr + 1) / 4096.0f;
+  vx = base_vx * ratio;
+  vy *= ratio;
+  g = base_g * ratio;
+  fly_vy = base_fly_vy * ratio;
+
+  update_obstacle(htim);
+  if (update_bird(i, htim, hadc)) {
     return 1;
+  }
+  i = (i + 1) % 8;
+  ssd1306_UpdateScreen();
+  return 0;
 }
 
 void FlappyBirdPlay(void){

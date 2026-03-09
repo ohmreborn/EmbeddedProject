@@ -1,4 +1,4 @@
 #pragma once
 
-void SetGameTitle(const char *title);
-void GameStart(void);
+void GameStart_SetGameTitle();
+void GameStart_Start(void);

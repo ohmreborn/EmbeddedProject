@@ -19,13 +19,7 @@ typedef struct {
 } AllObstacle;
 
 
-void reset_game(TIM_HandleTypeDef *htim);
-void init_obstacle(TIM_HandleTypeDef *htim);
-
-uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc);
-void update_obstacle(TIM_HandleTypeDef *htim);
-
-uint16_t get_obstacles_passed(void);
-
-uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc);
+uint16_t FlappyBirdGetScore(void);
+void FlappyBirdReset(TIM_HandleTypeDef *htim);
+uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc, uint32_t ldr);
 void FlappyBirdPlay(void);

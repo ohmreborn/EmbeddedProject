@@ -3,6 +3,8 @@
 
 #include <ssd1306.h>
 #include <ssd1306_fonts.h>
+
+#include <gameselect.h>
 #include <gamestart.h>
 
 const uint8_t ui_margin = 6; // equal margin from all sides
@@ -50,12 +52,12 @@ static void GameMenu_Render(void){
   ssd1306_UpdateScreen();
 }
 
-void SetGameTitle(const char *title){
-    strcpy(home_title, title);
-    GameMenu_Render();
+void GameStart_SetGameTitle(){
+  strcpy(home_title,GameSelect_GetCurrentGameName());
+  GameMenu_Render();
 }
 
-void GameStart(void){
+void GameStart_Start(void){
   ssd1306_FillRectangle(x1, btn_y1, x2, btn_y2, White);
   ssd1306_SetCursor(txt_x, txt_y);
   ssd1306_WriteString((char *)start_txt, Font_7x10, Black);

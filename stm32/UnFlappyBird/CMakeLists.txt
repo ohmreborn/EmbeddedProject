@@ -51,6 +51,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/FlappyBirdMain.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameselect.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gamestart.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameplay.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameover.c
 )
 
