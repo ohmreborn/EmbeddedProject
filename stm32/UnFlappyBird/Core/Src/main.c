@@ -25,6 +25,7 @@
 #include "stm32l4xx.h"
 #include "stm32l4xx_hal_adc.h"
 #include "stm32l4xx_hal_def.h"
+#include "buzzer.h"
 
 #include <gamestart.h>
 #include <gameover.h>
@@ -86,6 +87,9 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+  // user button may interrupt playing menu theme
+  Buzzer_Abort();
+
   if (GPIO_Pin == GPIO_PIN_1){
     // A1 pin - Navigation
     if (app_state == GAME_SELECT) {
@@ -160,6 +164,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim1);
   ssd1306_Init();
+  Buzzer_Init();          // configure buzzer & enable cycle counter for delays
+  Buzzer_Loader();        // play loader tone sequence
   GameSelect_Init();
   /* USER CODE END 2 */
 
@@ -171,6 +177,8 @@ int main(void)
       GameSelect_Render();
       while (app_state == GAME_SELECT);
     } else if (app_state == GAME_MAIN_MENU){
+      // play theme once when menu is entered
+      Buzzer_PlayTheme();
       while (app_state == GAME_MAIN_MENU);
     }else if (app_state == GAME_PLAY){
       while (app_state == GAME_PLAY){
@@ -187,8 +195,7 @@ int main(void)
       while (app_state == GAME_OVER);
     }
   }
-    /* USER CODE END WHILE */
-
+    /* USER CODE END WHILE */ 
     /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
 }
@@ -465,6 +472,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA0 (Buzzer) */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : START_BTN_Pin */

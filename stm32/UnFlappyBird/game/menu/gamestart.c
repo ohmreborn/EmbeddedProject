@@ -7,6 +7,7 @@
 #include <gameselect.h>
 #include <gamestart.h>
 
+
 const uint8_t ui_margin = 6; // equal margin from all sides
 char home_title[12]; // max length is 12 (include \0)
 static size_t title_len;

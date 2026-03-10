@@ -3,6 +3,8 @@
 #include <FlappyBirdMain.h>
 
 #include <ssd1306.h>
+#include "stm32l4xx_hal_gpio.h"
+#include "../../Core/Inc/buzzer.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -27,6 +29,8 @@ static const float dt = 1e-2;
 static uint16_t score = 0;
 static char score_str[16];
 static AllObstacle UnFlappyObstacle;
+
+// buzzer handled via buzzer module; notes are played on demand
 
 
 static void init_obstacle(TIM_HandleTypeDef *htim) {
@@ -88,6 +92,10 @@ static void update_obstacle(TIM_HandleTypeDef *htim){
     Obstacle *curr_obstacle = UnFlappyObstacle.all_obstacle + i;
     if ((uint8_t)curr_obstacle->x1 == x + w){
       score++;
+      // play scoring effect: G4 then B4
+      Buzzer_PlayNote(392, 50);
+      HAL_Delay(50);  // add 50ms delay between notes
+      Buzzer_PlayNote(494, 50);
     }
     if (curr_obstacle->x2 == 127) {
       curr_obstacle->x1 += vx * dt;
@@ -121,6 +129,7 @@ void FlappyBirdReset(TIM_HandleTypeDef *htim){
   y = 20;
   vy = 0;
   i = 0;
+  Buzzer_Off();
   init_obstacle(htim);
 }
 
@@ -133,8 +142,15 @@ uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc, uint32_
   g = base_g * ratio;
   fly_vy = base_fly_vy * ratio;
 
+  // no per-frame buzzer handling needed any more
+
   update_obstacle(htim);
   if (update_bird(i, htim, hadc)) {
+    // play death song: descending notes
+    Buzzer_PlayNote(262, 100); // C4
+    Buzzer_PlayNote(247, 100); // B3
+    Buzzer_PlayNote(220, 100); // A3
+    Buzzer_PlayNote(196, 100); // G3
     return 1;
   }
   i = (i + 1) % 8;
@@ -144,6 +160,7 @@ uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc, uint32_
 
 void FlappyBirdPlay(void){
   vy = fly_vy;
+  // jumping sound removed
 }
 
 uint16_t FlappyBirdGetScore(void) {
