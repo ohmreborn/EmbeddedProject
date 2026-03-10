@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include "esp_now.h"
 #include "esp_event.h"
@@ -6,9 +7,27 @@
 #include "freertos/task.h"
 #include "esp_mac.h"
 #include <driver/gpio.h>
+#include <driver/uart.h>
 
-#define LED_GPIO 2
+#define TXD_PIN (GPIO_NUM_17)
+#define RXD_PIN (GPIO_NUM_16)
+#define UART_PORT UART_NUM_2
 
+void init_uart(){
+  uart_config_t uart_config = {.baud_rate = 115200,
+                               .data_bits = UART_DATA_8_BITS,
+                               .parity = UART_PARITY_DISABLE,
+                               .stop_bits = UART_STOP_BITS_1,
+                               .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
+
+  // 2. Install driver and set pins
+  uart_driver_install(UART_PORT, 1024 * 2, 0, 0, NULL, 0);
+  uart_param_config(UART_PORT, &uart_config);
+  uart_set_pin(UART_PORT, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE,
+               UART_PIN_NO_CHANGE);
+}
+
+uint8_t data_send[2] = {0,0};
 static void on_data_recv(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len)
 {
     uint8_t *mac = recv_info->src_addr;
@@ -28,24 +47,52 @@ static void on_data_recv(const esp_now_recv_info_t *recv_info, const uint8_t *da
     float gy = gyroY / 131.0;
     float gz = gyroZ / 131.0;
 
-
-    if (gx < 0){
-        gx = -gx;
+    uint8_t packet = 1;
+    if (gx < 0) {
+      gx = -gx;
     }
-    if (gy < 0){
-        gy = -gy;
+    if (gx > 150) {
+      packet = packet | 1 << 1;
     }
-    if (gz < 0){
-        gz = -gz;
+    if (gy < 0) {
+      gy = -gy;
     }
-    if (gx > 150 || gy > 150 || gz > 150){
-        gpio_set_level(LED_GPIO, 1);
+    if (gy > 150) {
+      packet = packet | 1 << 2;
+    }
+    if (gz < 0) {
+      gz = -gz;
+    }
+    if (gz > 150) {
+      packet = packet | 1 << 3;
+    }
+    packet = packet | (data[14] & 1) << 4;
+    if (data[15]){
+        data_send[0] = packet;
     }else{
-        gpio_set_level(LED_GPIO, 0);
+        data_send[1] = packet;
     }
-    // 24:0A:C4:9A:FC:98 left
-    printf(">Received from MAC %02X:%02X:%02X:%02X:%02X:%02X AX:%.2f,AY:%.2f,AZ:%.2f,GX:%.2f,GY:%.2f,GZ:%.2f\n",mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ax, ay,az, gx, gy, gz);
-    // printf("Received from MAC %02X:%02X:%02X:%02X:%02X:%02X: %.*s\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], len, (char *)data);
+    // printf("%f %f %f\n", gx, gy, gz);
+
+    if ((data_send[0] & 1) && (data_send[1] & 1)){
+        // if (data_send[0] >> 1 || data_send[1] >> 1){
+          uart_write_bytes(UART_PORT, data_send, 2);
+
+          printf(">Received from MAC %02X:%02X:%02X:%02X:%02X:%02X ", mac[0],
+                 mac[1], mac[2], mac[3], mac[4], mac[5]);
+          for (int8_t i = 8 - 1; i >= 0; i--) {
+            printf("%d", (data_send[0] >> i) & 1);
+          }
+          printf(" ");
+          for (int8_t i = 8 - 1; i >= 0; i--) {
+            printf("%d", (data_send[1] >> i) & 1);
+          }
+          printf("\n");
+        // }
+      data_send[0] = 0;
+      data_send[1] = 0;
+    }
+
 }
 
 void wifi_init()
@@ -64,9 +111,10 @@ void wifi_init()
 
 void app_main(void)
 {
-    gpio_reset_pin(LED_GPIO);                 // Reset to default state
-    gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);  // Set as output
+    // gpio_reset_pin(LED_GPIO);                 // Reset to default state
+    // gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);  // Set as output
     wifi_init();
+    init_uart();
 
     esp_now_init();
 

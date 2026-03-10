@@ -10,7 +10,6 @@ void GameSelect_Render(void);
 
 // Handle A4 pin press (navigate)
 void GameSelect_NavigateUp(void);
-void GameSelect_NavigateDown(void);
 
 // Handle A8 pin press (confirm selection)
 // Returns index of selected game (0..NUM_GAMES-1) on confirm, or 255 if not confirmed yet

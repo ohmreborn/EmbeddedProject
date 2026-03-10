@@ -55,7 +55,7 @@ uint8_t RenderBall(TIM_HandleTypeDef *htim){
         vx = -vx;
       }else{
         score2 += 1;
-        if (score2 == 7){
+        if (score2 >= 7){
           return 2;
         }else{
           ResetBall(htim);

@@ -1,7 +1,9 @@
 // ESP NOW TX - send message for ESP IDF version 5.0 and higher
+#include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include <driver/i2c.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/lock.h>
 #include <sys/param.h>
@@ -13,8 +15,10 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
+#include "hal/gpio_types.h"
 #include "nvs_flash.h"
 #include "freertos/task.h"
+#include "soc/gpio_num.h"
 
 #define I2C_NUM I2C_NUM_0
 #define I2C_SCL GPIO_NUM_22
@@ -75,34 +79,66 @@ void wifi_init()
     esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE); // WiFi on channel 1
 }
 
+#define BUTTON_PIN GPIO_NUM_19 // scroll/back
+
+void button_init()
+{
+  gpio_config_t io_conf = {0};
+  io_conf.intr_type = GPIO_INTR_DISABLE;
+  io_conf.mode = GPIO_MODE_INPUT;
+  io_conf.pin_bit_mask = (1ULL << BUTTON_PIN); 
+  io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+  io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  gpio_config(&io_conf);
+}
+
+void hand_init()
+{
+  gpio_config_t io_conf = {0};
+  io_conf.intr_type = GPIO_INTR_DISABLE;
+  io_conf.mode = GPIO_MODE_INPUT;
+  io_conf.pin_bit_mask = (1ULL << GPIO_NUM_9); 
+  io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+  io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  gpio_config(&io_conf);
+}
+
+
 void app_main(void)
 {
-    mpu_6050_init();
-    wifi_init();
+  button_init();
+  hand_init();
+  mpu_6050_init();
+  wifi_init();
 
-    // Find local mac address
-    uint8_t my_esp_mac[6] = {0};
-    esp_read_mac(my_esp_mac, ESP_MAC_WIFI_STA);
-    printf("Local MAC address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-           my_esp_mac[0], my_esp_mac[1], my_esp_mac[2],
-           my_esp_mac[3], my_esp_mac[4], my_esp_mac[5]);
+  // Find local mac address
+  uint8_t my_esp_mac[6] = {0};
+  esp_read_mac(my_esp_mac, ESP_MAC_WIFI_STA);
+  printf("Local MAC address: %02X:%02X:%02X:%02X:%02X:%02X\n", my_esp_mac[0],
+         my_esp_mac[1], my_esp_mac[2], my_esp_mac[3], my_esp_mac[4],
+         my_esp_mac[5]);
 
-    // ESP-NOW initiation and register a callback function that will be called
-    esp_now_init();
-    // esp_now_register_send_cb(on_data_sent);
+  // ESP-NOW initiation and register a callback function that will be called
+  esp_now_init();
+  // esp_now_register_send_cb(on_data_sent);
 
-    // Add a peer device with which ESP32 can communicate
-    esp_now_peer_info_t peer = {0};
-    memcpy(peer.peer_addr, mac_destination, 6);
-    peer.channel = 1;
-    peer.encrypt = false;
-    esp_now_add_peer(&peer);
+  // Add a peer device with which ESP32 can communicate
+  esp_now_peer_info_t peer = {0};
+  memcpy(peer.peer_addr, mac_destination, 6);
+  peer.channel = 1;
+  peer.encrypt = false;
+  esp_now_add_peer(&peer);
 
-    while (1)
-    {
-      uint8_t data[14];
-      mpuReadfromReg(0x3B, data, 14);
-      esp_now_send(mac_destination, (uint8_t *)data, 14);
-      // vTaskDelay(pdMS_TO_TICKS(50));
+  uint8_t curr_bttn = 0;
+  uint8_t prev_bttn = 0;
+  while (1) {
+    uint8_t data[16];
+    mpuReadfromReg(0x3B, data, 14);
+    curr_bttn = gpio_get_level(BUTTON_PIN);
+    data[14] = curr_bttn && !prev_bttn;
+    prev_bttn = curr_bttn;
+    data[15] = gpio_get_level(GPIO_NUM_9);
+    esp_now_send(mac_destination, (uint8_t *)data, 16);
+    vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
