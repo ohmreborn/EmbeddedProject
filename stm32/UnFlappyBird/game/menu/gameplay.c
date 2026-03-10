@@ -18,16 +18,11 @@ void GamePlay_Play(void){
     GamePlay[GameSelect_CurrentIndex()]();
 }
 
-static void (*GamePlay2[2])(void) = {&FlappyBirdPlay, &PongPlay};
+static void (*GamePlay2[2])(void) = {&FlappyBirdPlay, &PongPlay2};
 void GamePlay_Play2(void){
   if (GameSelect_IsMultiPlayer()) {
     GamePlay2[GameSelect_CurrentIndex()]();
   }
-}
-
-static uint16_t (*GameGetScore[2])(void) = {&FlappyBirdGetScore, &PongGetScore};
-uint16_t GamePlayGetScore(void){
-    return GameGetScore[GameSelect_CurrentIndex()]();
 }
 
 static void (*GameReset[2])(TIM_HandleTypeDef *htim) = {&FlappyBirdReset, &PongReset};

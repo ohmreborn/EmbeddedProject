@@ -557,6 +557,10 @@ uint8_t ssd1306_GetDisplayOn() {
     return SSD1306.DisplayOn;
 }
 
+uint8_t ssd1306_IsHit(uint8_t x, uint8_t y){
+  return SSD1306_Buffer[x + (y / 8) * SSD1306_WIDTH] & y%8;
+}
+
 void ssd1306_DrawObstacle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2){
     ssd1306_FillRectangle(x1, 0, x2, y1, White);
     ssd1306_FillRectangle(x1, y2, x2, 63, White);

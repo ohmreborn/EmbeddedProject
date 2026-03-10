@@ -49,7 +49,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ssd1306/ssd1306_fonts.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/bird.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/FlappyBirdMain.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/FlappyBird/FlappyBirdGameOver.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/Pong/Ball.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/Pong/PongMain.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/game/Pong/PongGameOver.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameselect.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gamestart.c
     ${CMAKE_CURRENT_SOURCE_DIR}/game/menu/gameplay.c

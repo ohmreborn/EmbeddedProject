@@ -24,7 +24,6 @@ static const uint8_t h = 17;
 static uint8_t i = 0;
 
 static const float dt = 1e-2;
-// static uint16_t obstacles_passed = 0;
 static uint16_t score = 0;
 static char score_str[16];
 static AllObstacle UnFlappyObstacle;

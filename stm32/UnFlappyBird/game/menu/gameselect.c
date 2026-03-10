@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 // list of games - add more entries as you add games
-static const char *games[] = {"UNFLAPPY", "GAME2"};
+static const char *games[] = {"UNFLAPPY", "Pong"};
 static const uint8_t is_multi_player[2] = {0, 1};
 #define NUM_GAMES 2
 
