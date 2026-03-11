@@ -165,7 +165,6 @@ int main(void)
         }
       }
     }else{ // GAME_OVER
-      GameOver_Init();
       GameOver_Render();
       while (app_state == GAME_OVER);
     }
@@ -514,7 +513,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     Buzzer_Abort();
 
     uint8_t left_gyrox = read_data[0] & 1 << 1;
-    uint8_t right_gyrox = read_data[0] & 1 << 1;
+    uint8_t right_gyrox = read_data[1] & 1 << 1;
 
     uint8_t left_gyroy = read_data[0] & 1 << 2;
     uint8_t right_gyroy = read_data[1] & 1 << 2;
@@ -526,9 +525,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     uint8_t right_button = read_data[1] & 1 << 4;
 
     if (app_state == GAME_SELECT) {
-      if (left_button) {
+      if (left_button || right_button) {
         GameSelect_NavigateUp();
-      } else if (right_button) {
+      } else if (left_gyrox || left_gyroy || left_gyroz || right_gyrox || right_gyroy || right_gyroz) {
         app_state = GAME_MAIN_MENU; // go to game main menu
         GameStart_SetGameTitle();
       }
@@ -543,10 +542,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     } else if (app_state == GAME_PLAY) {
       if (GameSelect_IsMultiPlayer()) {
         if (left_gyrox || left_gyroy || left_gyroz || left_button) {
-          GamePlay_Play();
+          GamePlay_Play2();
         }
         if (right_gyrox || right_gyroy || right_gyroz || right_button) {
-          GamePlay_Play2();
+          GamePlay_Play();
         }
       }else{
         if ((left_gyrox && right_gyrox) || (left_gyroy && right_gyroy) ||
@@ -557,7 +556,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     } else {
       if (left_button || right_button) {
         app_state = GAME_SELECT;
-        GameOver_Restart();
+        GamePlay_Reset(&htim1);
       }
     }
   }

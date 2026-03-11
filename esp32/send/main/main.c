@@ -25,6 +25,8 @@
 #define I2C_SDA GPIO_NUM_21
 #define MPU_ADDR 0x68
 
+#define BUTTON_PIN GPIO_NUM_19 // scroll/back
+
 // Receiver MAC Address
 // uint8_t mac_destination[6] = {0xe8, 0x68, 0xe7, 0x23, 0x82, 0x1c};
 uint8_t mac_destination[6] = {0x30, 0xae, 0xa4, 0x1a, 0x28, 0x20};
@@ -79,35 +81,23 @@ void wifi_init()
     esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE); // WiFi on channel 1
 }
 
-#define BUTTON_PIN GPIO_NUM_19 // scroll/back
 
-void button_init()
+void gpio_init(gpio_num_t pin)
 {
   gpio_config_t io_conf = {0};
   io_conf.intr_type = GPIO_INTR_DISABLE;
   io_conf.mode = GPIO_MODE_INPUT;
-  io_conf.pin_bit_mask = (1ULL << BUTTON_PIN); 
-  io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
-  io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-  gpio_config(&io_conf);
-}
-
-void hand_init()
-{
-  gpio_config_t io_conf = {0};
-  io_conf.intr_type = GPIO_INTR_DISABLE;
-  io_conf.mode = GPIO_MODE_INPUT;
-  io_conf.pin_bit_mask = (1ULL << GPIO_NUM_9); 
-  io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
-  io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  io_conf.pin_bit_mask = (1ULL << pin); 
+  io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+  io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE;
   gpio_config(&io_conf);
 }
 
 
 void app_main(void)
 {
-  button_init();
-  hand_init();
+  gpio_init(BUTTON_PIN);
+  gpio_init(GPIO_NUM_10);
   mpu_6050_init();
   wifi_init();
 
@@ -137,8 +127,9 @@ void app_main(void)
     curr_bttn = gpio_get_level(BUTTON_PIN);
     data[14] = curr_bttn && !prev_bttn;
     prev_bttn = curr_bttn;
-    data[15] = gpio_get_level(GPIO_NUM_9);
+    data[15] = gpio_get_level(GPIO_NUM_10);
     esp_now_send(mac_destination, (uint8_t *)data, 16);
+    // printf("%d\n", data[15]);
     vTaskDelay(pdMS_TO_TICKS(50));
     }
 }

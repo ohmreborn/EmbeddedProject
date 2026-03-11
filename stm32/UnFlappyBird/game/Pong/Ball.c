@@ -1,7 +1,10 @@
-#include "ssd1306.h"
-#include "ssd1306_fonts.h"
-#include "stm32l4xx_hal_tim.h"
+#include <stm32l4xx.h>
+
+#include <ssd1306.h>
+#include <ssd1306_fonts.h>
+
 #include <Ball.h>
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -37,6 +40,15 @@ void ResetBall(TIM_HandleTypeDef *htim){
     vy = -vy;
   }
   if (score1 == 7 || score2 == 7){
+    uint8_t btn_w = 80;
+    uint8_t btn_h = 14;
+    uint8_t screen_x1 = (128 - btn_w) / 2;
+    uint8_t screen_y1 = 64 - 6 - btn_h; // keep top/bottom margins equal (6)
+    uint8_t screen_x2 = screen_x1 + btn_w;
+    uint8_t screen_y2 = screen_y1 + btn_h;
+    ssd1306_InvertRectangle(screen_x1 + 1, screen_y1 + 1, screen_x2 - 1,
+                            screen_y2 - 1);
+    ssd1306_UpdateScreen();
     score1 = 0;
     score2 = 0;
   }
@@ -47,6 +59,12 @@ uint8_t RenderBall(TIM_HandleTypeDef *htim){
     y -= vy*dt;
     if (y-r <= 0 || y+r >= 63){
         vy = -vy;
+    }
+    if (y - r <= 0) {
+      y = r;
+    }
+    if (y + r >= 127) {
+      y = 127-r;
     }
 
     if (x-r <= 0){

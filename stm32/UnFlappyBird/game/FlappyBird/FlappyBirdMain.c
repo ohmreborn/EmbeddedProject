@@ -9,6 +9,23 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define OBSTACLE_LENGTH  8
+#define DISTANCE_OBSTACLE 32
+#define NUM_OBSTACLE 128/(OBSTACLE_LENGTH + DISTANCE_OBSTACLE)
+
+typedef struct {
+    float x1;
+    float x2;
+    uint8_t y1;
+    uint8_t y2;
+} Obstacle;
+
+typedef struct {
+    Obstacle all_obstacle[NUM_OBSTACLE];
+    uint8_t size_queue;
+} AllObstacle;
+
+
 static const float base_g = 500;
 static const float base_vy = 100;
 static const float base_vx = -100;
@@ -42,6 +59,22 @@ static void init_obstacle(TIM_HandleTypeDef *htim) {
     UnFlappyObstacle.all_obstacle[i].y1 = __HAL_TIM_GET_COUNTER(htim);
     UnFlappyObstacle.all_obstacle[i].y2 = UnFlappyObstacle.all_obstacle[i].y1 + 30;
   }
+}
+
+void FlappyBirdReset(TIM_HandleTypeDef *htim){
+  y = 20;
+  vy = 0;
+  i = 0;
+  uint8_t btn_w = 80;
+  uint8_t btn_h = 14;
+  uint8_t x1 = (128 - btn_w) / 2;
+  uint8_t y1 = 64 - 6 - btn_h; // keep top/bottom margins equal (6)
+  uint8_t x2 = x1 + btn_w;
+  uint8_t y2 = y1 + btn_h;
+  Buzzer_Off();
+  init_obstacle(htim);
+  ssd1306_InvertRectangle(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+  ssd1306_UpdateScreen();
 }
 
 static uint8_t update_bird(uint8_t i, TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc){
@@ -125,13 +158,6 @@ static void update_obstacle(TIM_HandleTypeDef *htim){
   }
 }
 
-void FlappyBirdReset(TIM_HandleTypeDef *htim){
-  y = 20;
-  vy = 0;
-  i = 0;
-  Buzzer_Off();
-  init_obstacle(htim);
-}
 
 uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc, uint32_t ldr){
   ssd1306_Fill(Black);
@@ -163,6 +189,7 @@ void FlappyBirdPlay(void){
   // jumping sound removed
 }
 
+// for get score when game over
 uint16_t FlappyBirdGetScore(void) {
   return score;
 }

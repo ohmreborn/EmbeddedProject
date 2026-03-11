@@ -25,10 +25,10 @@ void GameSelect_Render(void){
   
   // instructions
   ssd1306_SetCursor(0, 12);
-  ssd1306_WriteString("A1: Navigate", Font_7x10, White);
+  ssd1306_WriteString("Press: Navigate", Font_7x10, White);
   
   ssd1306_SetCursor(0, 24);
-  ssd1306_WriteString("A4: Select", Font_7x10, White);
+  ssd1306_WriteString("67: Select", Font_7x10, White);
   
   // list entries
   for(uint8_t i = 0; i < NUM_GAMES; i++){

@@ -51,31 +51,31 @@ static void on_data_recv(const esp_now_recv_info_t *recv_info, const uint8_t *da
     if (gx < 0) {
       gx = -gx;
     }
-    if (gx > 150) {
+    if (gx > 200) {
       packet = packet | 1 << 1;
     }
     if (gy < 0) {
       gy = -gy;
     }
-    if (gy > 150) {
+    if (gy > 200) {
       packet = packet | 1 << 2;
     }
     if (gz < 0) {
       gz = -gz;
     }
-    if (gz > 150) {
+    if (gz > 200) {
       packet = packet | 1 << 3;
     }
     packet = packet | (data[14] & 1) << 4;
     if (data[15]){
-        data_send[0] = packet;
-    }else{
-        data_send[1] = packet;
+      data_send[0] = packet;
+    } else {
+      data_send[1] = packet;
     }
     // printf("%f %f %f\n", gx, gy, gz);
 
     if ((data_send[0] & 1) && (data_send[1] & 1)){
-        // if (data_send[0] >> 1 || data_send[1] >> 1){
+        if (data_send[0] >> 1 || data_send[1] >> 1){
           uart_write_bytes(UART_PORT, data_send, 2);
 
           printf(">Received from MAC %02X:%02X:%02X:%02X:%02X:%02X ", mac[0],
@@ -88,7 +88,7 @@ static void on_data_recv(const esp_now_recv_info_t *recv_info, const uint8_t *da
             printf("%d", (data_send[1] >> i) & 1);
           }
           printf("\n");
-        // }
+        }
       data_send[0] = 0;
       data_send[1] = 0;
     }

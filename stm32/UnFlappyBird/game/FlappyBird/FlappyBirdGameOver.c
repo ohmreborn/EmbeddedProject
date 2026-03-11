@@ -18,11 +18,6 @@ static const uint8_t y1 = 64 - 6 - btn_h; // keep top/bottom margins equal (6)
 static const uint8_t x2 = x1 + btn_w;
 static const uint8_t y2 = y1 + btn_h;
 
-void FlappyBirdGameOver_Init(void){
-  ssd1306_Fill(Black);
-  ssd1306_UpdateScreen();
-}
-
 void FlappyBirdGameOver_Render(void){
   ssd1306_Fill(Black);
 
@@ -50,10 +45,5 @@ void FlappyBirdGameOver_Render(void){
   ssd1306_SetCursor(rt_x, rt_y);
   ssd1306_WriteString((char*)restart_txt, Font_6x8, White);
 
-  ssd1306_UpdateScreen();
-}
-
-void FlappyBirdGameOver_Restart(void){
-  ssd1306_InvertRectangle(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
   ssd1306_UpdateScreen();
 }
