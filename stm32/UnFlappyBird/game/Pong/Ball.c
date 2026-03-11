@@ -63,8 +63,8 @@ uint8_t RenderBall(TIM_HandleTypeDef *htim){
     if (y - r <= 0) {
       y = r;
     }
-    if (y + r >= 127) {
-      y = 127-r;
+    if (y + r >= 63) {
+      y = 63-r;
     }
 
     if (x-r <= 0){
