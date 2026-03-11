@@ -1,5 +1,6 @@
 #include "buzzer.h"
 #include "main.h" // for HAL and possibly TIM handle
+#include "stm32l4xx_hal_gpio.h"
 #include <stdbool.h>
 
 // simple microsecond delay using DWT cycle counter
@@ -19,15 +20,6 @@ static void delay_us(uint32_t us)
     }
 }
 
-void Buzzer_Init(void)
-{
-    // GPIO is already configured in MX_GPIO_Init() as output push-pull on PA0
-    // nothing to do here for the active buzzer. microsecond delays utility can
-    // be used by play-note routines so make sure DWT is enabled.
-    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-}
-
 void Buzzer_PlayNote(uint32_t frequency, uint32_t duration_ms)
 {
     if (frequency == 0) {
@@ -40,17 +32,17 @@ void Buzzer_PlayNote(uint32_t frequency, uint32_t duration_ms)
     uint32_t total_cycles = (duration_ms * 1000U) / (2U * half_period_us);
     if (total_cycles == 0) {
         // if duration too short, just toggle once and exit
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
         delay_us(half_period_us);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
         return;
     }
 
     for (uint32_t i = 0; i < total_cycles; i++) {
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
         delay_us(half_period_us);
     }
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
 }
 
 // helper used by theme and loader

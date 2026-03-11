@@ -4,7 +4,7 @@
 
 #include <ssd1306.h>
 #include "stm32l4xx_hal_gpio.h"
-#include "../../Core/Inc/buzzer.h"
+#include "buzzer.h"
 
 #include <stdio.h>
 #include <stdint.h>

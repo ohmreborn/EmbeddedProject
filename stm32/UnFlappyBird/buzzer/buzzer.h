@@ -1,11 +1,7 @@
-#ifndef BUZZER_H
-#define BUZZER_H
+#pragma once
 
 #include <stdint.h>
 #include "stm32l4xx_hal.h"  // bring in GPIO types and HAL routines
-
-// Initialize buzzer hardware (GPIO + optional timing resources)
-void Buzzer_Init(void);
 
 // Play a simple tone at the given frequency (Hz) for duration (ms).
 // If frequency is zero the buzzer will remain silent for the duration.
@@ -32,5 +28,3 @@ void Buzzer_Abort(void);
 // convenience wrappers for an active buzzer
 static inline void Buzzer_On(void)  { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET); }
 static inline void Buzzer_Off(void) { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET); }
-
-#endif // BUZZER_H
