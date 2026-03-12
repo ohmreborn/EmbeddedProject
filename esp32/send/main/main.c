@@ -98,6 +98,10 @@ void app_main(void)
 {
   gpio_init(BUTTON_PIN);
   gpio_init(GPIO_NUM_10);
+  gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
+  uint8_t level = gpio_get_level(GPIO_NUM_10);
+  gpio_set_level(GPIO_NUM_2, level);
+
   mpu_6050_init();
   wifi_init();
 
@@ -127,7 +131,7 @@ void app_main(void)
     curr_bttn = gpio_get_level(BUTTON_PIN);
     data[14] = curr_bttn && !prev_bttn;
     prev_bttn = curr_bttn;
-    data[15] = gpio_get_level(GPIO_NUM_10);
+    data[15] = level;
     esp_now_send(mac_destination, (uint8_t *)data, 16);
     // printf("%d\n", data[15]);
     vTaskDelay(pdMS_TO_TICKS(50));
