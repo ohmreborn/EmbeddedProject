@@ -162,7 +162,7 @@ static void update_obstacle(TIM_HandleTypeDef *htim){
 uint8_t FlappyBirdIdle(TIM_HandleTypeDef *htim, ADC_HandleTypeDef* hadc, uint32_t ldr){
   ssd1306_Fill(Black);
 
-  float ratio = ((float)ldr + 1) / 4096.0f;
+  float ratio = ((float)ldr + 1) / 1536.0f;
   vx = base_vx * ratio;
   vy *= ratio;
   g = base_g * ratio;
